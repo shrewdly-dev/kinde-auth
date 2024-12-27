@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  name      String   @unique
+  address_1 String
+  address_2 String?
+  city      String
+  postcode  String
+  telephone String
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  upatedAt  DateTime @updatedAt @map(name: "updated_at")
+  users     User[]   @relation
+
+  Machine Machine[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String?
+  firstName String?  @db.VarChar()
+  lastName  String?  @db.VarChar()
+  onboarded Boolean  @default(false)
+  email     String?  @unique
+  role      String?  @default("Member")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  upatedAt  DateTime @updatedAt @map(name: "updated_at")
+}
+
+model Machine {
+  id        String   @id @default(cuid())
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String?
+  num       String   @unique
+  category  String   @default("C") @db.VarChar(10)
+  name      String
+  jackpot   String   @default("£100")
+  tito      Boolean  @default(false)
+  cashIn    Boolean  @default(true)
+  cashOut   Boolean  @default(true)
+  ticketIn  Boolean? @default(false)
+  ticketOut Boolean? @default(false)
+  refill    Boolean? @default(false)
+  handPay   Boolean? @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  upatedAt  DateTime @updatedAt @map(name: "updated_at")
+}
